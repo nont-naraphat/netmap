@@ -53,6 +53,12 @@ async def health():
             "poll": POLL_SECONDS}
 
 
+@app.get("/api/diag")
+async def diag(tool: str = "fortigate_status"):
+    """Probe the MCP once and report exactly where it breaks."""
+    return JSONResponse(collector.diag(tool))
+
+
 def _loop():
     while True:
         try:

@@ -49,20 +49,20 @@ NODES = [
     ("AP04", "AP-04", "gi3", "ap", "campus", 420, 575),
     ("AP05", "AP-05", "MR36", "ap", "campus", 530, 575),
     ("AP06", "AP-06 temp", "MR36", "ap", "campus", 640, 575),
-    # LEFT column -- virtualization (Proxmox pve01 + guests)
-    ("PVE", "Proxmox pve01", "192.168.0.10", "host", "virt", 370, 760),
-    ("ADSRV", "AD01 (DC/DNS)", "192.168.0.4", "server", "virt", 230, 880),
-    ("NASVM", "XPEnology NAS VMs", "ArcLoader", "server", "virt", 390, 880),
-    ("FMG", "FortiManager VM107", "fmg mgmt", "server", "virt", 550, 880),
-    # LEFT column -- vlans
-    ("V2", "VLAN2 Staff", "192.168.110.1/23", "vlan", "vlans", 130, 1065),
-    ("V3", "VLAN3 Guest", "192.168.120.1/24", "vlan", "vlans", 300, 1065),
-    ("V4", "VLAN4 Printer", "192.168.150.1/24", "vlan", "vlans", 470, 1065),
-    ("V5", "VLAN5 SAP", "192.168.160.1/24", "vlan", "vlans", 640, 1065),
-    ("V9", "VLAN9 CCTV", "192.168.130.1/24", "vlan", "vlans", 130, 1175),
-    ("V10", "VLAN10 IT.Admin", "192.168.140.1/24", "vlan", "vlans", 300, 1175),
-    ("V90", "VLAN90 Bypass", "192.168.90.1/24", "vlan", "vlans", 470, 1175),
-    ("V99", "VLAN99 MGNT", "192.168.99.1/24", "vlan", "vlans", 640, 1175),
+    # LEFT column -- vlans (directly under the switch; short links)
+    ("V2", "VLAN2 Staff", "192.168.110.1/23", "vlan", "vlans", 130, 760),
+    ("V3", "VLAN3 Guest", "192.168.120.1/24", "vlan", "vlans", 300, 760),
+    ("V4", "VLAN4 Printer", "192.168.150.1/24", "vlan", "vlans", 470, 760),
+    ("V5", "VLAN5 SAP", "192.168.160.1/24", "vlan", "vlans", 640, 760),
+    ("V9", "VLAN9 CCTV", "192.168.130.1/24", "vlan", "vlans", 130, 870),
+    ("V10", "VLAN10 IT.Admin", "192.168.140.1/24", "vlan", "vlans", 300, 870),
+    ("V90", "VLAN90 Bypass", "192.168.90.1/24", "vlan", "vlans", 470, 870),
+    ("V99", "VLAN99 MGNT", "192.168.99.1/24", "vlan", "vlans", 640, 870),
+    # LEFT column -- virtualization (Proxmox pve01 + guests) at the bottom
+    ("PVE", "Proxmox pve01", "192.168.0.10", "host", "virt", 560, 1050),
+    ("ADSRV", "AD01 (DC/DNS)", "192.168.0.4", "server", "virt", 420, 1170),
+    ("NASVM", "XPEnology NAS VMs", "ArcLoader", "server", "virt", 560, 1170),
+    ("FMG", "FortiManager VM107", "fmg mgmt", "server", "virt", 700, 1170),
     # RIGHT column -- azure cloud
     ("AZVPN", "S2S IPsec Gateway", "85.211.229.245", "vpn", "cloud", 1070, 460),
     ("HUB", "Hub VNet", "10.100.0.0/16", "vnet", "cloud", 1330, 460),
@@ -205,18 +205,22 @@ def collect_mock():
 class MCP:
     """Minimal MCP streamable-HTTP (JSON-RPC) client for tools/call.
     If your MCP uses a different transport/auth, this is the only place to
-    adjust (see _post / headers)."""
+    adjust (see _post / _headers)."""
 
     def __init__(self, url, token, prefix=""):
         self.url = url.rstrip("/")
         self.token = token
         self.prefix = prefix           # e.g. "" or "IT_Infra."
         self.sid = None
+        self.proto = "2025-06-18"
         self._ready = False
 
     def _headers(self):
+        # many servers (FastMCP) reject tools/call after initialize unless the
+        # negotiated MCP-Protocol-Version header is echoed back on every call.
         h = {"Content-Type": "application/json",
-             "Accept": "application/json, text/event-stream"}
+             "Accept": "application/json, text/event-stream",
+             "MCP-Protocol-Version": self.proto}
         if self.token:
             h["Authorization"] = f"Bearer {self.token}"
         if self.sid:
@@ -226,20 +230,22 @@ class MCP:
     def _post(self, payload):
         r = requests.post(self.url, headers=self._headers(), json=payload,
                           timeout=30, stream=True)
-        sid = r.headers.get("Mcp-Session-Id")
+        sid = r.headers.get("Mcp-Session-Id") or r.headers.get("mcp-session-id")
         if sid:
             self.sid = sid
         if r.status_code >= 400:
-            raise RuntimeError(f"MCP HTTP {r.status_code}: {r.text[:200]}")
+            raise RuntimeError(f"HTTP {r.status_code}: {r.text[:300]}")
         ctype = r.headers.get("Content-Type", "")
         if "text/event-stream" in ctype:
             data = None
             for line in r.iter_lines(decode_unicode=True):
                 if line and line.startswith("data:"):
-                    try:
-                        data = json.loads(line[5:].strip())
-                    except Exception:
-                        pass
+                    chunk = line[5:].strip()
+                    if chunk and chunk != "[DONE]":
+                        try:
+                            data = json.loads(chunk)
+                        except Exception:
+                            pass
             return data
         if not r.content:
             return None
@@ -248,10 +254,16 @@ class MCP:
     def ensure(self):
         if self._ready:
             return
-        self._post({"jsonrpc": "2.0", "id": 1, "method": "initialize",
-                    "params": {"protocolVersion": "2025-06-18",
-                               "capabilities": {},
-                               "clientInfo": {"name": "netmap", "version": "1.0"}}})
+        init = self._post({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                           "params": {"protocolVersion": self.proto,
+                                      "capabilities": {},
+                                      "clientInfo": {"name": "netmap", "version": "1.0"}}})
+        try:
+            pv = (init or {}).get("result", {}).get("protocolVersion")
+            if pv:
+                self.proto = pv            # echo server's version on later calls
+        except Exception:
+            pass
         try:
             self._post({"jsonrpc": "2.0", "method": "notifications/initialized"})
         except Exception:
@@ -259,23 +271,37 @@ class MCP:
         self._ready = True
 
     def call(self, name, args=None):
-        """Call a tool, return its parsed JSON result (the tool's dict)."""
+        """Call a tool; return its result dict. Raises on error with detail."""
         self.ensure()
         res = self._post({"jsonrpc": "2.0", "id": str(uuid.uuid4()),
                           "method": "tools/call",
                           "params": {"name": self.prefix + name,
                                      "arguments": args or {}}})
-        if not res or "result" not in res:
-            raise RuntimeError(f"no result for {name}: {str(res)[:200]}")
-        content = res["result"].get("content", [])
-        for block in content:
+        if not res:
+            raise RuntimeError("empty response")
+        if res.get("error"):
+            raise RuntimeError(f"rpc error: {str(res['error'])[:200]}")
+        result = res.get("result")
+        if result is None:
+            raise RuntimeError(f"no result: {str(res)[:200]}")
+        if result.get("isError"):
+            txt = " ".join(b.get("text", "") for b in result.get("content", [])
+                           if b.get("type") == "text")
+            raise RuntimeError(f"tool error: {txt[:200]}")
+        # prefer already-parsed structured content
+        sc = result.get("structuredContent")
+        if isinstance(sc, dict):
+            if set(sc.keys()) == {"result"} and isinstance(sc["result"], dict):
+                return sc["result"]
+            return sc
+        # else: first text block that parses as JSON
+        for block in result.get("content", []):
             if block.get("type") == "text":
                 try:
                     return json.loads(block["text"])
                 except Exception:
-                    return {"_text": block["text"]}
-        sc = res["result"].get("structuredContent")
-        return sc if sc is not None else {}
+                    continue
+        return {}
 
 
 def _mark(nodes_by_id, nid, status):
@@ -413,7 +439,42 @@ def collect_mcp():
             if bid[k]["status"] == "unknown":
                 _mark(bid, k, "up")
 
-    return _finalize(nodes, edges, f"live via MCP ({url})")
+    resolved = sum(1 for n in nodes if n["status"] != "unknown")
+    src = f"live via MCP \u00b7 resolved {resolved}/{len(nodes)}"
+    if resolved == 0:
+        src += " \u2014 all reads failed, check /api/diag"
+    return _finalize(nodes, edges, src)
+
+
+def diag(tool="fortigate_status"):
+    """One-shot MCP probe for /api/diag: shows whether initialize and the tool
+    call succeed, plus the error text and a sample of the result."""
+    url = os.environ.get("MCP_URL", "https://mcp.21sunpassion.com/mcp")
+    token = os.environ.get("MCP_TOKEN", "")
+    prefix = os.environ.get("MCP_TOOL_PREFIX", "")
+    out = {"url": url, "prefix": prefix or "(none)", "tokenSet": bool(token),
+           "tool": prefix + tool}
+    m = MCP(url, token, prefix)
+    try:
+        m.ensure()
+        out["initialize"] = "ok"
+        out["session"] = bool(m.sid)
+        out["proto"] = m.proto
+    except Exception as e:
+        out["initialize"] = "FAIL"
+        out["error"] = repr(e)
+        return out
+    try:
+        data = m.call(tool)
+        out["call"] = "ok"
+        out["resultType"] = type(data).__name__
+        if isinstance(data, dict):
+            out["keys"] = list(data.keys())[:25]
+        out["sample"] = str(data)[:800]
+    except Exception as e:
+        out["call"] = "FAIL"
+        out["error"] = repr(e)
+    return out
 
 
 def collect():

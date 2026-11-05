@@ -123,8 +123,8 @@
       {
         selector: "edge",
         style: {
-          "width": 2.4, "line-color": "data(edgeColor)",
-          "curve-style": "taxi", "taxi-direction": "auto", "taxi-turn": "40%",
+          "width": 1.8, "line-color": "data(edgeColor)", "opacity": 0.8,
+          "curve-style": "bezier", "control-point-step-size": 45,
           "target-arrow-shape": "none",
           "label": "data(label)", "font-family": "JetBrains Mono",
           "font-size": "9px", "color": muted,
