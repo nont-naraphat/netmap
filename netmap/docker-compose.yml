@@ -1,0 +1,17 @@
+services:
+  netmap:
+    build: .
+    container_name: netmap
+    restart: unless-stopped
+    ports:
+      - "8700:8000"
+    environment:
+      # "mock" = show the captured snapshot (runs with no creds).
+      # "mcp"  = pull live status from the IT Infra MCP.
+      COLLECTOR: "mock"
+      POLL_SECONDS: "30"
+      # --- only needed when COLLECTOR=mcp ---
+      MCP_URL: "https://mcp.21sunpassion.com/mcp"
+      MCP_TOKEN: ""
+      # If bare tool names 404 on your server, try "IT_Infra."
+      MCP_TOOL_PREFIX: ""

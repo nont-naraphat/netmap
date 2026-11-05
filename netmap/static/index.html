@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NetMap — SUNSU Network (live)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot-logo"></span>
+      <div>
+        <div class="kick">SUNSUSOLUTION · BEARHOUSE · 21 SUNPASSION</div>
+        <h1>NetMap — แผนผังเครือข่ายแบบเรียลไทม์</h1>
+      </div>
+    </div>
+    <div class="controls">
+      <span class="live" id="live"><i></i> LIVE</span>
+      <button id="btnRefresh" class="btn">รีเฟรช</button>
+      <button id="btnFit" class="btn">จัดให้พอดี</button>
+      <button id="btnReset" class="btn ghost">รีเซ็ตตำแหน่ง</button>
+      <button id="btnTheme" class="btn ghost" title="theme">◐</button>
+    </div>
+  </header>
+
+  <div id="cy"></div>
+
+  <div class="legend" id="legend">
+    <div class="legend-sec">
+      <b>สถานะ</b>
+      <span><i class="s up"></i>ปกติ</span>
+      <span><i class="s warn"></i>เฝ้าระวัง</span>
+      <span><i class="s down"></i>ขัดข้อง</span>
+      <span><i class="s unknown"></i>ไม่ทราบ</span>
+    </div>
+    <div class="legend-sec">
+      <b>ชนิด</b>
+      <span>🔥 Firewall</span><span>🗄 Switch</span><span>📶 Wi-Fi</span>
+      <span>🖥 Server</span><span>☁ Azure</span><span>🔒 Tunnel/VPN</span>
+    </div>
+  </div>
+
+  <div class="meta" id="meta"></div>
+
+  <aside class="panel" id="panel" hidden>
+    <button class="panel-x" id="panelX">✕</button>
+    <div class="panel-ico" id="pIco">●</div>
+    <h2 id="pTitle">—</h2>
+    <div class="panel-badge" id="pStatus">—</div>
+    <dl id="pBody"></dl>
+  </aside>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
