@@ -33,54 +33,54 @@ BKK = timezone(timedelta(hours=7))
 # zone draws the group box; type drives the icon + color.
 # NODES: id, label, sub, type, zone, x, y
 NODES = [
-    # internet / wan
-    ("INTERNET", "Internet", "3 ISP uplinks", "internet", "internet", 800, 60),
-    ("WAN1", "WAN1 Symphony", "83.118.10.145/31", "wan", "wan", 520, 185),
-    ("WAN2", "WAN2 AIS", "192.168.11.37", "wan", "wan", 800, 185),
-    ("WAN3", "WAN3 AIS", "192.168.10.38", "wan", "wan", 1080, 185),
+    # internet / wan (top spine)
+    ("INTERNET", "Internet", "3 ISP uplinks", "internet", "internet", 850, 60),
+    ("WAN1", "WAN1 Symphony", "83.118.10.145/31", "wan", "wan", 600, 185),
+    ("WAN2", "WAN2 AIS", "192.168.11.37", "wan", "wan", 850, 185),
+    ("WAN3", "WAN3 AIS", "192.168.10.38", "wan", "wan", 1100, 185),
     # core
-    ("FGT", "FortiGate 120G", "FortiOS 7.4.11", "fw", "core", 800, 330),
-    # campus LAN + wifi
-    ("SW01", "Cisco C1300 SW-01", "48-port PoE", "switch", "campus", 300, 470),
-    ("BRIDGE2", "Server LAN", "192.168.0.0/24", "lan", "campus", 560, 470),
-    ("AP01", "AP-01", "MR36", "ap", "campus", 110, 575),
-    ("AP02", "AP-02", "MR36", "ap", "campus", 215, 575),
-    ("AP03", "AP-03", "MR36", "ap", "campus", 320, 575),
-    ("AP04", "AP-04", "gi3", "ap", "campus", 425, 575),
+    ("FGT", "FortiGate 120G", "FortiOS 7.4.11", "fw", "core", 850, 320),
+    # LEFT column -- campus LAN + wifi
+    ("SW01", "Cisco C1300 SW-01", "48-port PoE", "switch", "campus", 300, 460),
+    ("BRIDGE2", "Server LAN", "192.168.0.0/24", "lan", "campus", 560, 460),
+    ("AP01", "AP-01", "MR36", "ap", "campus", 90, 575),
+    ("AP02", "AP-02", "MR36", "ap", "campus", 200, 575),
+    ("AP03", "AP-03", "MR36", "ap", "campus", 310, 575),
+    ("AP04", "AP-04", "gi3", "ap", "campus", 420, 575),
     ("AP05", "AP-05", "MR36", "ap", "campus", 530, 575),
-    ("AP06", "AP-06 temp", "MR36", "ap", "campus", 635, 575),
-    # virtualization (Proxmox pve01 + its guests)
-    ("PVE", "Proxmox pve01", "192.168.0.10", "host", "virt", 430, 690),
-    ("ADSRV", "AD01 (DC/DNS)", "192.168.0.4", "server", "virt", 290, 800),
-    ("NASVM", "XPEnology NAS VMs", "ArcLoader", "server", "virt", 440, 800),
-    ("FMG", "FortiManager VM107", "fmg mgmt", "server", "virt", 600, 800),
-    # vlans
-    ("V2", "VLAN2 Staff", "192.168.110.1/23", "vlan", "vlans", 150, 915),
-    ("V3", "VLAN3 Guest", "192.168.120.1/24", "vlan", "vlans", 300, 915),
-    ("V4", "VLAN4 Printer", "192.168.150.1/24", "vlan", "vlans", 450, 915),
-    ("V5", "VLAN5 SAP", "192.168.160.1/24", "vlan", "vlans", 600, 915),
-    ("V9", "VLAN9 CCTV", "192.168.130.1/24", "vlan", "vlans", 150, 1000),
-    ("V10", "VLAN10 IT.Admin", "192.168.140.1/24", "vlan", "vlans", 300, 1000),
-    ("V90", "VLAN90 Bypass", "192.168.90.1/24", "vlan", "vlans", 450, 1000),
-    ("V99", "VLAN99 MGNT", "192.168.99.1/24", "vlan", "vlans", 600, 1000),
-    # azure cloud
-    ("AZVPN", "S2S IPsec Gateway", "85.211.229.245", "vpn", "cloud", 1000, 470),
-    ("HUB", "Hub VNet", "10.100.0.0/16", "vnet", "cloud", 1240, 470),
-    ("BI", "Spoke BI", "10.101.0.0/23", "vnet", "cloud", 1080, 620),
-    ("SAP", "Spoke SAP B1", "10.102.0.0/24", "vnet", "cloud", 1360, 620),
-    ("DWHBI", "dwhbi SQL MI", "4 vCore", "db", "cloud", 990, 740),
-    ("VMBI", "vm-sunsu-bi", "Windows", "server", "cloud", 1140, 740),
-    ("SAPAPP", "sap-b1-app", "10.102.0.4", "server", "cloud", 1300, 740),
-    ("SAPDB", "sap-b1-db", "10.102.0.5", "db", "cloud", 1430, 740),
-    # remote sites (site-to-site)
-    ("KITCHEN", "FG-to-Kitchen C", "192.168.1.0/24", "tunnel", "sites", 180, 1130),
-    ("INET", "to-iNET", "192.168.2.0/24", "tunnel", "sites", 360, 1130),
-    ("HOME", "Home (MikroTik)", "172.27.53.0/24", "tunnel", "sites", 540, 1130),
-    ("BS", "IPsec to BS", "standby", "tunnel", "sites", 270, 1220),
-    ("VMSUP", "VMSupport", "standby", "tunnel", "sites", 450, 1220),
-    # remote access
-    ("SSLVPN", "SSL-VPN", "ssl.root", "remote", "remote", 1060, 1130),
-    ("L2TP", "L2TP", "10.10.0.0/16", "remote", "remote", 1240, 1130),
+    ("AP06", "AP-06 temp", "MR36", "ap", "campus", 640, 575),
+    # LEFT column -- virtualization (Proxmox pve01 + guests)
+    ("PVE", "Proxmox pve01", "192.168.0.10", "host", "virt", 370, 760),
+    ("ADSRV", "AD01 (DC/DNS)", "192.168.0.4", "server", "virt", 230, 880),
+    ("NASVM", "XPEnology NAS VMs", "ArcLoader", "server", "virt", 390, 880),
+    ("FMG", "FortiManager VM107", "fmg mgmt", "server", "virt", 550, 880),
+    # LEFT column -- vlans
+    ("V2", "VLAN2 Staff", "192.168.110.1/23", "vlan", "vlans", 130, 1065),
+    ("V3", "VLAN3 Guest", "192.168.120.1/24", "vlan", "vlans", 300, 1065),
+    ("V4", "VLAN4 Printer", "192.168.150.1/24", "vlan", "vlans", 470, 1065),
+    ("V5", "VLAN5 SAP", "192.168.160.1/24", "vlan", "vlans", 640, 1065),
+    ("V9", "VLAN9 CCTV", "192.168.130.1/24", "vlan", "vlans", 130, 1175),
+    ("V10", "VLAN10 IT.Admin", "192.168.140.1/24", "vlan", "vlans", 300, 1175),
+    ("V90", "VLAN90 Bypass", "192.168.90.1/24", "vlan", "vlans", 470, 1175),
+    ("V99", "VLAN99 MGNT", "192.168.99.1/24", "vlan", "vlans", 640, 1175),
+    # RIGHT column -- azure cloud
+    ("AZVPN", "S2S IPsec Gateway", "85.211.229.245", "vpn", "cloud", 1070, 460),
+    ("HUB", "Hub VNet", "10.100.0.0/16", "vnet", "cloud", 1330, 460),
+    ("BI", "Spoke BI", "10.101.0.0/23", "vnet", "cloud", 1150, 605),
+    ("SAP", "Spoke SAP B1", "10.102.0.0/24", "vnet", "cloud", 1430, 605),
+    ("DWHBI", "dwhbi SQL MI", "4 vCore", "db", "cloud", 1060, 745),
+    ("VMBI", "vm-sunsu-bi", "Windows", "server", "cloud", 1210, 745),
+    ("SAPAPP", "sap-b1-app", "10.102.0.4", "server", "cloud", 1370, 745),
+    ("SAPDB", "sap-b1-db", "10.102.0.5", "db", "cloud", 1530, 745),
+    # RIGHT column -- remote sites (site-to-site)
+    ("KITCHEN", "FG-to-Kitchen C", "192.168.1.0/24", "tunnel", "sites", 1090, 930),
+    ("INET", "to-iNET", "192.168.2.0/24", "tunnel", "sites", 1270, 930),
+    ("HOME", "Home (MikroTik)", "172.27.53.0/24", "tunnel", "sites", 1450, 930),
+    ("BS", "IPsec to BS", "standby", "tunnel", "sites", 1180, 1040),
+    ("VMSUP", "VMSupport", "standby", "tunnel", "sites", 1360, 1040),
+    # RIGHT column -- remote access
+    ("SSLVPN", "SSL-VPN", "ssl.root", "remote", "remote", 1180, 1200),
+    ("L2TP", "L2TP", "10.10.0.0/16", "remote", "remote", 1360, 1200),
 ]
 
 # EDGES: id, source, target, type, label

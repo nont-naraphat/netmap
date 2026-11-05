@@ -89,3 +89,5 @@ h1{font-family:"Space Grotesk";font-weight:700;font-size:clamp(15px,2.1vw,20px);
   .legend{display:none}
   h1{font-size:14px}
 }
+
+.tagline{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

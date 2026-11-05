@@ -52,7 +52,23 @@ The live collector overlays status from the same read tools the map was built fr
 > Guest name matching lives in `collect_mcp` → `guest_names`; adjust it to your
 > actual VM names / VMIDs on pve01.
 
-`collector.py` is the only file to touch:
+### Setting the env in Portainer (Git stack)
+
+`docker-compose.yml` reads these as `${VAR}` substitutions, so set them in
+**Portainer → Stack → Environment variables** (the token never lands in Git):
+
+| Name       | Value                                   |
+|------------|-----------------------------------------|
+| `COLLECTOR`| `mcp`                                   |
+| `MCP_TOKEN`| `<bearer token for the MCP>`            |
+| `MCP_URL`  | `https://mcp.21sunpassion.com/mcp`      |
+
+Then tick **Redeploy** → **Save settings**. Verify: open `/api/health` (expect
+`"collector":"mcp"`) and the map footer should read **live via MCP**. If it says
+`MCP error, showing snapshot: …`, the app stayed on the snapshot — check the
+token/URL (and try `MCP_TOOL_PREFIX=IT_Infra.`).
+
+`collector.py` is the only file to touch for data wiring:
 - **Transport/auth** differs on your MCP? Adjust `MCP._post` / `_headers`
   (it speaks standard MCP streamable-HTTP JSON-RPC with a bearer token today).
 - Bare tool names rejected? set `MCP_TOOL_PREFIX="IT_Infra."`.

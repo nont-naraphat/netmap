@@ -3,7 +3,7 @@
   "use strict";
 
   var REFRESH_MS = 20000;
-  var LS_POS = "netmap-pos-v1";
+  var LS_POS = "netmap-pos-v2";
   var LS_THEME = "netmap-theme";
 
   var TYPE_COLOR = {
@@ -110,7 +110,7 @@
           "padding": "11px", "background-color": "data(typeColor)",
           "background-opacity": 0.17, "border-width": 3,
           "border-color": "data(statusColor)",
-          "label": "data(disp)", "text-wrap": "wrap", "text-max-width": "138px",
+          "label": "data(disp)", "text-wrap": "wrap", "text-max-width": "120px",
           "text-valign": "center", "text-halign": "center",
           "font-family": "Inter", "font-size": "11px", "line-height": 1.3,
           "color": ink, "font-weight": 500,
